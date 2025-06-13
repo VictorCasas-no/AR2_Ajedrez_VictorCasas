@@ -1,6 +1,6 @@
 #include <iostream>
 
-#define tamañoTablero 8
+#define tamañoTablero 8         //Defino tamaño del tablero
 
 #define WHITE_ROOK 'R'
 #define WHITE_KNIGHT 'N'
@@ -16,8 +16,10 @@
 #define BLACK_KING 'k'
 #define BLACK_PAWN 'p'
 
-// Inicialización del tablero
+// ======================= INICIALIZACIÓN DEL TABLERO =======================
+
 void inicializarTablero(char tablero[tamañoTablero][tamañoTablero]) {
+    // Negras
     tablero[0][0] = BLACK_ROOK;
     tablero[0][1] = BLACK_KNIGHT;
     tablero[0][2] = BLACK_BISHOP;
@@ -27,20 +29,24 @@ void inicializarTablero(char tablero[tamañoTablero][tamañoTablero]) {
     tablero[0][6] = BLACK_KNIGHT;
     tablero[0][7] = BLACK_ROOK;
 
+    // Peones negros
     for (int i = 0; i < tamañoTablero; i = i + 1) {
         tablero[1][i] = BLACK_PAWN;
     }
 
+    // Casillas vacías
     for (int fila = 2; fila < 6; fila = fila + 1) {
         for (int columna = 0; columna < tamañoTablero; columna = columna + 1) {
             tablero[fila][columna] = '*';
         }
     }
 
+    // Peones blancos
     for (int i = 0; i < tamañoTablero; i = i + 1) {
         tablero[6][i] = WHITE_PAWN;
     }
 
+    // Blancas
     tablero[7][0] = WHITE_ROOK;
     tablero[7][1] = WHITE_KNIGHT;
     tablero[7][2] = WHITE_BISHOP;
@@ -51,7 +57,8 @@ void inicializarTablero(char tablero[tamañoTablero][tamañoTablero]) {
     tablero[7][7] = WHITE_ROOK;
 }
 
-// Impresión del tablero con coordenadas numéricas
+//////////////////////////////////////////////////////////////////////////////////
+
 void imprimirTablero(char tablero[tamañoTablero][tamañoTablero]) {
     std::cout << "  ";
     for (int columna = 0; columna < tamañoTablero; columna = columna + 1) {
@@ -62,7 +69,6 @@ void imprimirTablero(char tablero[tamañoTablero][tamañoTablero]) {
     for (int fila = 0; fila < tamañoTablero; fila = fila + 1) {
         int numFila = tamañoTablero - fila;
         std::cout << numFila << " ";
-
         for (int columna = 0; columna < tamañoTablero; columna = columna + 1) {
             std::cout << tablero[fila][columna] << " ";
         }
@@ -70,120 +76,301 @@ void imprimirTablero(char tablero[tamañoTablero][tamañoTablero]) {
     }
 }
 
-// Verifica si una pieza es blanca
+//////////////////////////////////////////////////////////////////////////////////
+
 bool esPiezaBlanca(char pieza) {
-    return pieza == WHITE_PAWN || pieza == WHITE_ROOK || pieza == WHITE_KNIGHT || pieza == WHITE_BISHOP || pieza == WHITE_QUEEN || pieza == WHITE_KING;
-}
-
-// Verifica si una pieza es negra
-bool esPiezaNegra(char pieza) {
-    return pieza == BLACK_PAWN || pieza == BLACK_ROOK || pieza == BLACK_KNIGHT || pieza == BLACK_BISHOP || pieza == BLACK_QUEEN || pieza == BLACK_KING;
-}
-
-// Verifica si las coordenadas están dentro del tablero
-bool dentroDelTablero(int fila, int columna) {
-    return fila >= 0 && fila < tamañoTablero && columna >= 0 && columna < tamañoTablero;
-}
-
-// Movimiento del peón
-bool moverPeon(char tablero[tamañoTablero][tamañoTablero], int filaOrigen, int columnaOrigen, int filaDestino, int columnaDestino, bool turnoBlanco) {
-    char pieza = tablero[filaOrigen][columnaOrigen];
-    int direccion = turnoBlanco ? -1 : 1;
-    char piezaDestino = tablero[filaDestino][columnaDestino];
-
-    if (columnaOrigen == columnaDestino) {
-        if (tablero[filaDestino][columnaDestino] == '*' && filaDestino == filaOrigen + direccion) {
-            return true;
-        }
-        if (turnoBlanco && filaOrigen == 6 && filaDestino == 4 && tablero[5][columnaOrigen] == '*' && tablero[4][columnaOrigen] == '*') {
-            return true;
-        }
-        if (turnoBlanco == false && filaOrigen == 1 && filaDestino == 3 && tablero[2][columnaOrigen] == '*' && tablero[3][columnaOrigen] == '*') {
-            return true;
-        }
-    }
-    else if (std::abs(columnaDestino - columnaOrigen) == 1 && filaDestino == filaOrigen + direccion) {
-        if (turnoBlanco && esPiezaNegra(piezaDestino)) {
-            return true;
-        }
-        if (turnoBlanco == false && esPiezaBlanca(piezaDestino)) {
-            return true;
-        }
+    if (pieza >= 'A' && pieza <= 'Z') {
+        return true;
     }
     return false;
 }
 
-// (Más funciones de movimiento por pieza se incluirán aquí más adelante)
+//////////////////////////////////////////////////////////////////////////////////
 
-int main() {
-    char tablero[tamañoTablero][tamañoTablero];
-    inicializarTablero(tablero);
+bool esPiezaNegra(char pieza) {
+    if (pieza >= 'a' && pieza <= 'z') {
+        return true;
+    }
+    return false;
+}
 
-    bool turnoBlanco = true;
-    bool juegoActivo = true;
+//////////////////////////////////////////////////////////////////////////////////
 
-    while (juegoActivo) {
-        imprimirTablero(tablero);
-        if (turnoBlanco) {
-            std::cout << "Turno de las blancas" << std::endl;
+
+bool esDentroTablero(int fila, int columna) {
+    if (fila >= 0 && fila < tamañoTablero && columna >= 0 && columna < tamañoTablero) {
+        return true;
+    }
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+bool caminoLibreHorizontal(char tablero[tamañoTablero][tamañoTablero], int fila, int columnaInicio, int columnaFin) {
+    int paso = 1;
+    if (columnaFin < columnaInicio) {
+        paso = -1;
+    }
+    for (int c = columnaInicio + paso; c != columnaFin; c = c + paso) {
+        if (tablero[fila][c] != '*') {
+            return false;
         }
-        else {
-            std::cout << "Turno de las negras" << std::endl;
+    }
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+bool caminoLibreVertical(char tablero[tamañoTablero][tamañoTablero], int columna, int filaInicio, int filaFin) {
+    int paso = 1;
+    if (filaFin < filaInicio) {
+        paso = -1;
+    }
+    for (int f = filaInicio + paso; f != filaFin; f = f + paso) {
+        if (tablero[f][columna] != '*') {
+            return false;
+        }
+    }
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+bool caminoLibreDiagonal(char tablero[tamañoTablero][tamañoTablero], int filaInicio, int columnaInicio, int filaFin, int columnaFin) {
+    int pasoFila = 1;
+    int pasoColumna = 1;
+    if (filaFin < filaInicio) {
+        pasoFila = -1;
+    }
+    if (columnaFin < columnaInicio) {
+        pasoColumna = -1;
+    }
+
+    int fila = filaInicio + pasoFila;
+    int columna = columnaInicio + pasoColumna;
+
+    while (fila != filaFin && columna != columnaFin) {
+        if (tablero[fila][columna] != '*') {
+            return false;
+        }
+        fila = fila + pasoFila;
+        columna = columna + pasoColumna;
+    }
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+
+bool esMovimientoValido(char tablero[tamañoTablero][tamañoTablero], int filaOrigen, int columnaOrigen, int filaDestino, int columnaDestino) {
+    if (esDentroTablero(filaOrigen, columnaOrigen) == false || esDentroTablero(filaDestino, columnaDestino) == false) {
+        return false;
+    }
+
+    char pieza = tablero[filaOrigen][columnaOrigen];
+    char destino = tablero[filaDestino][columnaDestino];
+
+    if (pieza == '*') {
+        return false;
+    }
+
+    bool esBlanca = esPiezaBlanca(pieza);
+    bool esNegra = esPiezaNegra(pieza);
+
+    if ((esBlanca && esPiezaBlanca(destino)) || (esNegra && esPiezaNegra(destino))) {
+        return false; // No puede capturar pieza propia
+    }
+
+    int filaDelta = filaDestino - filaOrigen;
+    int columnaDelta = columnaDestino - columnaOrigen;
+
+    // Movimiento válido según tipo de pieza
+    if (pieza == WHITE_PAWN || pieza == BLACK_PAWN) {
+        int direccion = (pieza == WHITE_PAWN) ? -1 : 1;
+        int filaInicio = (pieza == WHITE_PAWN) ? 6 : 1;
+
+        // Movimiento adelante 1 casilla
+        if (columnaDelta == 0 && filaDelta == direccion && destino == '*') {
+            return true;
         }
 
-        int filaOrigen, columnaOrigen, filaDestino, columnaDestino;
-        std::cout << "Introduce fila y columna de origen (1-8): ";
-        std::cin >> filaOrigen >> columnaOrigen;
-        std::cout << "Introduce fila y columna de destino (1-8): ";
-        std::cin >> filaDestino >> columnaDestino;
-
-        filaOrigen = tamañoTablero - filaOrigen;
-        columnaOrigen = columnaOrigen - 1;
-        filaDestino = tamañoTablero - filaDestino;
-        columnaDestino = columnaDestino - 1;
-
-        if (dentroDelTablero(filaOrigen, columnaOrigen) == false || dentroDelTablero(filaDestino, columnaDestino) == false) {
-            std::cout << "Coordenadas fuera del tablero." << std::endl;
-            continue;
-        }
-
-        char pieza = tablero[filaOrigen][columnaOrigen];
-
-        if (pieza == '*' || (turnoBlanco && esPiezaBlanca(pieza) == false) || (turnoBlanco == false && esPiezaNegra(pieza) == false)) {
-            std::cout << "No puedes mover esa pieza." << std::endl;
-            continue;
-        }
-
-        bool movimientoValido = false;
-
-        if (pieza == WHITE_PAWN || pieza == BLACK_PAWN) {
-            movimientoValido = moverPeon(tablero, filaOrigen, columnaOrigen, filaDestino, columnaDestino, turnoBlanco);
-        }
-
-        // Aquí se añadirán las verificaciones para otras piezas...
-
-        if (movimientoValido == false) {
-            std::cout << "Movimiento inválido." << std::endl;
-            continue;
-        }
-
-        if ((turnoBlanco && esPiezaNegra(tablero[filaDestino][columnaDestino])) || (turnoBlanco == false && esPiezaBlanca(tablero[filaDestino][columnaDestino]))) {
-            if (tablero[filaDestino][columnaDestino] == BLACK_KING || tablero[filaDestino][columnaDestino] == WHITE_KING) {
-                std::cout << "El rey ha sido capturado. Fin del juego." << std::endl;
-                juegoActivo = false;
+        // Movimiento adelante 2 casillas desde posición inicial
+        if (columnaDelta == 0 && filaDelta == 2 * direccion && destino == '*') {
+            int filaIntermedia = filaOrigen + direccion;
+            if (tablero[filaIntermedia][columnaOrigen] == '*' && filaOrigen == filaInicio) {
+                return true;
             }
         }
 
-        tablero[filaDestino][columnaDestino] = pieza;
-        tablero[filaOrigen][columnaOrigen] = '*';
-
-        if ((pieza == WHITE_PAWN && filaDestino == 0) || (pieza == BLACK_PAWN && filaDestino == 7)) {
-            tablero[filaDestino][columnaDestino] = turnoBlanco ? WHITE_QUEEN : BLACK_QUEEN;
+        // Captura diagonal
+        if ((columnaDelta == 1 || columnaDelta == -1) && filaDelta == direccion && destino != '*') {
+            return true;
         }
 
-        turnoBlanco = turnoBlanco == false;
+        return false;
     }
+
+    if (pieza == WHITE_ROOK || pieza == BLACK_ROOK) {
+        if (filaOrigen == filaDestino && columnaOrigen != columnaDestino) {
+            if (caminoLibreHorizontal(tablero, filaOrigen, columnaOrigen, columnaDestino) == true) {
+                return true;
+            }
+        }
+        if (columnaOrigen == columnaDestino && filaOrigen != filaDestino) {
+            if (caminoLibreVertical(tablero, columnaOrigen, filaOrigen, filaDestino) == true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if (pieza == WHITE_BISHOP || pieza == BLACK_BISHOP) {
+        if (abs(filaDelta) == abs(columnaDelta)) {
+            if (caminoLibreDiagonal(tablero, filaOrigen, columnaOrigen, filaDestino, columnaDestino) == true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if (pieza == WHITE_QUEEN || pieza == BLACK_QUEEN) {
+        if (filaOrigen == filaDestino && columnaOrigen != columnaDestino) {
+            if (caminoLibreHorizontal(tablero, filaOrigen, columnaOrigen, columnaDestino) == true) {
+                return true;
+            }
+        }
+        if (columnaOrigen == columnaDestino && filaOrigen != filaDestino) {
+            if (caminoLibreVertical(tablero, columnaOrigen, filaOrigen, filaDestino) == true) {
+                return true;
+            }
+        }
+        if (abs(filaDelta) == abs(columnaDelta)) {
+            if (caminoLibreDiagonal(tablero, filaOrigen, columnaOrigen, filaDestino, columnaDestino) == true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if (pieza == WHITE_KNIGHT || pieza == BLACK_KNIGHT) {
+        if ((abs(filaDelta) == 2 && abs(columnaDelta) == 1) || (abs(filaDelta) == 1 && abs(columnaDelta) == 2)) {
+            return true;
+        }
+        return false;
+    }
+
+    if (pieza == WHITE_KING || pieza == BLACK_KING) {
+        if ((abs(filaDelta) <= 1) && (abs(columnaDelta) <= 1)) {
+            return true;
+        }
+        return false;
+    }
+
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+void jugar(char tablero[tamañoTablero][tamañoTablero]) {
+    bool turnoBlanco = true;
+
+    while (true) {
+        imprimirTablero(tablero);
+
+        std::cout << "Turno de las ";
+        if (turnoBlanco == true) {
+            std::cout << "blancas (mayusculas)" << std::endl;
+        }
+        else {
+            std::cout << "negras (minusculas)" << std::endl;
+        }
+
+        int filaOrigen = -1;
+        int columnaOrigen = -1;
+        int filaDestino = -1;
+        int columnaDestino = -1;
+
+        while (true) {
+            std::cout << "Introduce fila de origen (1-8): ";
+            std::cin >> filaOrigen;
+            std::cout << "Introduce columna de origen (1-8): ";
+            std::cin >> columnaOrigen;
+
+            filaOrigen = tamañoTablero - filaOrigen;
+            columnaOrigen = columnaOrigen - 1;
+
+            if (esDentroTablero(filaOrigen, columnaOrigen) == false) {
+                std::cout << "Posición de origen fuera del tablero. Intenta de nuevo." << std::endl;
+                continue;
+            }
+
+            char pieza = tablero[filaOrigen][columnaOrigen];
+            if (pieza == '*') {
+                std::cout << "No hay pieza en la posición de origen. Intenta de nuevo." << std::endl;
+                continue;
+            }
+
+            if (turnoBlanco == true && !esPiezaBlanca(pieza)) {
+                std::cout << "Esa pieza no es blanca. Intenta de nuevo." << std::endl;
+                continue;
+            }
+
+            if (turnoBlanco == false && !esPiezaNegra(pieza)) {
+                std::cout << "Esa pieza no es negra. Intenta de nuevo." << std::endl;
+                continue;
+            }
+
+            break;
+        }
+
+        bool movimientoValido = false;
+        while (movimientoValido == false) {
+            std::cout << "Introduce fila de destino (1-8): ";
+            std::cin >> filaDestino;
+            std::cout << "Introduce columna de destino (1-8): ";
+            std::cin >> columnaDestino;
+
+            filaDestino = tamañoTablero - filaDestino;
+            columnaDestino = columnaDestino - 1;
+
+            if (esDentroTablero(filaDestino, columnaDestino) == false) {
+                std::cout << "Posición de destino fuera del tablero. Intenta de nuevo." << std::endl;
+                continue;
+            }
+
+            if (esMovimientoValido(tablero, filaOrigen, columnaOrigen, filaDestino, columnaDestino) == true) {
+                movimientoValido = true;
+            }
+            else {
+                std::cout << "Movimiento no válido para esa pieza. Intenta de nuevo." << std::endl;
+            }
+        }
+
+        // Mover la pieza
+        char piezaMover = tablero[filaOrigen][columnaOrigen];
+        tablero[filaDestino][columnaDestino] = piezaMover;
+        tablero[filaOrigen][columnaOrigen] = '*';
+
+        // Cambio de turno
+        if (turnoBlanco == true) {
+            turnoBlanco = false;
+        }
+        else {
+            turnoBlanco = true;
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+
+int main() {
+    char tablero[tamañoTablero][tamañoTablero];
+
+    inicializarTablero(tablero);
+    jugar(tablero);
 
     return 0;
 }
+
 
